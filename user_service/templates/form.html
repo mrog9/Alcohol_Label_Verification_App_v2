@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alcohol Label Verification App</title>
+</head>
+<body>
+    <h1>Alcohol Label Verification</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="brand">Brand Name:</label>
+        <input type="text" name="brand" placeholder="Enter Brand Name">
+        <label for="product">Product Type:</label>
+        <input type="text" name="product" placeholder="Enter Product Type">
+        <label for="content">Alcohol Content:</label>
+        <input type="text" name="content" placeholder="Enter Alcohol Content (%)">
+        <label for="net">Net Contents:</label>
+        <input type="text" name="net" placeholder="Enter Net Contents (mL)">
+        <input type="file" name="file">
+        <button type="submit">Upload</button>
+    </form>
+
+    <div>
+    {% if submission %}
+    <p>{{submission}}</p>
+    {% endif %}
+    </div>
+
+    <div>
+
+        {% if text %}
+        <h2>Text Detected</h2>
+        <p> {{text}} </p>
+        {% endif %}
+    </div>
+
+
+</body>
+</html>
