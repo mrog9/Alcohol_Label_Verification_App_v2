@@ -57,10 +57,11 @@ def upload_file():
 
             comment = "SUCCESS!"
 
+        if img:
 
-        raw_path = save_file(app, file, img)
-        filepath = raw_path.replace('static/', "")
-        filepath = filepath.replace("\\", "/")
+            raw_path = save_file(app, file, img)
+            filepath = raw_path.replace('static/', "")
+            filepath = filepath.replace("\\", "/")
       
     return render_template("form.html", text = text, comment = comment, filepath = filepath)
 
