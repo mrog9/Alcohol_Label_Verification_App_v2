@@ -3,46 +3,47 @@ from pytesseract import Output
 import io
 from PIL import Image, ImageDraw
 import os
+from flask import request
+
+
+# deleting any files previously saved
+
+def delete_any_files(folder):
+
+    with os.scandir(folder) as entries:
+        if any(entries):
+            for e in entries:
+                os.remove(e.path())
+
 
 # this method is to make sure the form fields are not empty. It goes through 
 # each field and adds to the comment string if it is empty and returns the string.
 
 def validate_form_input(b, p, a, n, f):
 
-    comment = ""
+    comment_dict = dict()
 
     if not b:
 
-        comment += "Brand name was not given.\n"
+        comment_dict["brand"] = "Brand name was not given.\n"
 
     if not p:
 
-        comment += "Product type was not given.\n"
+        comment_dict["product"] = "Product type was not given.\n"
 
     if not a:
 
-        comment += "Alcohol percentage was not given.\n"
+        comment_dict["alcohol"] = "Alcohol percentage was not given.\n"
 
     if not n:
 
-        comment += "Net contents were not given.\n"
+        comment_dict["contents"] = "Net contents were not given.\n"
 
     if not f:
 
-        comment += "A file was not uploaded."
+        comment_dict["file"] = "A file was not uploaded."
 
-    return comment
-
-# saves file so that it can be used by html script
-
-def save_file(app, file_obj, img):
-
-    # Save to static/uploads
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_obj.filename)
-    img.save(filepath)
-
-    return filepath
-
+    return comment_dict
 
 
 
@@ -71,6 +72,7 @@ def get_text_from_image(file_obj):
 
     if not fail_flag:
 
+        # img = img.convert("L")  # grayscale
         img = img.resize((img.width * 2, img.height * 2))  # upscale
 
         # OCR with PyTesseract
@@ -179,6 +181,9 @@ def highlight_image(fail_pos_list, img, data_list, label_segs):
         first_flag = True
         cnt = 0
 
+        print(i)
+        print(label_segs[i])
+
         for j in range(len(data_list['text'])):
 
             if data_list['text'][j].lower() in label_segs[i]:
@@ -243,3 +248,59 @@ def validate_label(img, b, p, a, n):
 
     return comment, img
 
+
+# this method gets all necessary comments by going through form headings first, then
+# getting text through image, and then validating labels.
+
+
+def getComments(app):
+
+    text = ""
+    comment = ""
+    img = None
+    comment_dict = {"missing_headers": None,
+                "comments_after_submit":"",
+                "success":""}
+
+    brand = request.form['brand'].lower()
+    prod = request.form['product'].lower()
+    alc = request.form['content'].lower().replace(" ","")
+    net = request.form['net'].lower().replace(" ","")
+    file = request.files["file"]
+
+    comment_dict['missing_headers'] = validate_form_input(brand, prod, alc, net, file)
+
+    if not comment_dict['missing_headers']:
+
+        text, comment, img = get_text_from_image(file)
+
+        if not text and not comment:
+
+            comment += "Take clearer picture. No text could be recognized."
+
+        if not comment:
+
+            comment, img = validate_label(img, brand, prod, alc, net)
+            
+        if not comment:
+            comment_dict["success"] = "SUCCESS!"
+        else:
+            comment_dict["comments_after_submit"] = comment
+
+    return comment_dict, file, img, text
+
+
+# saving the image so it can be used in html script
+
+def save_image(app, file_obj, img):
+
+    filepath = None
+
+    if img:
+
+        raw_path = os.path.join(app.config['UPLOAD_FOLDER'], file_obj.filename)
+        img.save(raw_path)
+        filepath = raw_path.replace('static/', "")
+        filepath = filepath.replace("\\", "/")
+
+    return filepath

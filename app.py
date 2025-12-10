@@ -26,42 +26,15 @@ def index():
 @app.route("/upload", methods=["GET", "POST"])
 def upload_file():
 
-    text = ""
-    comment = ""
-    filepath = ""
-    img = None
+    text, comment, filepath = None, None, None
+
+    delete_any_files(UPLOAD_FOLDER)
 
     if request.method == "POST":
 
-        brand = request.form['brand'].lower()
-        prod = request.form['product'].lower()
-        alc = request.form['content'].lower().replace(" ","")
-        net = request.form['net'].lower().replace(" ","")
-        file = request.files["file"]
-
-        comment = validate_form_input(brand, prod, alc, net, file)
-
-        if not comment:
-
-            text, comment, img = get_text_from_image(file)
-
-        if not text and not comment:
-
-            comment += "Take clearer picture. No text could be recognized."
-
-        if not comment:
-
-            comment, img = validate_label(img, brand, prod, alc, net)
-            
-        if not comment:
-
-            comment = "SUCCESS!"
-
-        if img:
-
-            raw_path = save_file(app, file, img)
-            filepath = raw_path.replace('static/', "")
-            filepath = filepath.replace("\\", "/")
+        comment, file_obj, img, text = getComments(app)
+        filepath = save_image(app, file_obj, img)
+        
       
     return render_template("form.html", text = text, comment = comment, filepath = filepath)
 
