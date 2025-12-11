@@ -45,23 +45,17 @@
 
 }
 
-.comments{
-
-    display: flex;
-    align-self: center;
-
-}
 
 .success{
 
+    align-self: flex-start;
     background-color: green;
 
 }
 
 .failure{
 
-    display: flex;
-    flex-direction: row;
+    align-self: center;
     background-color: red;
 
 }

@@ -32,7 +32,7 @@ def upload_file():
 
     if request.method == "POST":
 
-        comment, file_obj, img, text = getComments(app)
+        comment, file_obj, img, text = getComments()
         filepath = save_image(app, file_obj, img)
         
       

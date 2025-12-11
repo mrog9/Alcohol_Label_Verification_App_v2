@@ -71,30 +71,28 @@
         </div>
       </div>
 
-        <div class="image">
-          {% if filepath %}
-          <h1>Image</h1>
-          <img src="{{ url_for('static', filename=filepath) }}">
-          {% endif %}
-        </div>
-
-    </div>
-
-    <div class="comments">
-      {% if comment %}
-        {% if comment.comments_after_submit %}
-        <div class="failure">
-          <div>
-            <h1>ERROR MESSAGE:  {{comment.comments_after_submit}}</h1>
-          </div>
-        </div>
-        {% else %}
-        <div class="success">
-          <h1>{{comment.success}}</h1>
-        </div>
+      <div class="image">
+        {% if filepath %}
+        <h1>Image</h1>
+        <img src="{{ url_for('static', filename=filepath) }}", width = "400", height="400">
         {% endif %}
-      {% endif %}
+      </div>
+
     </div>
+
+    {% if comment %}
+      {% if comment.comments_after_submit %}
+      <div class="failure">
+        <div>
+          <h1>ERROR MESSAGE:  {{comment.comments_after_submit}}</h1>
+        </div>
+      </div>
+      {% else %}
+      <div class="success">
+        <h1>{{comment.success}}</h1>
+      </div>
+      {% endif %}
+    {% endif %}
 
     <div class="extract">
 

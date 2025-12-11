@@ -53,16 +53,15 @@ def validate_form_input(b, p, a, n, f):
 # if its successful, then the image is converted to gray scale and is upscaled before 
 # pytesseract extracts text from the image. The text and comment is then returned.
 
-def get_text_from_image(file_obj):
+def preprocess_image(file_obj):
 
     fail_flag = False
     comment = ""
-    text = ""
-
-    img_bytes = file_obj.read()
+    img = None
 
     try:
 
+        img_bytes = file_obj.read()
         img = Image.open(io.BytesIO(img_bytes))
 
     except Exception as e:
@@ -75,10 +74,7 @@ def get_text_from_image(file_obj):
         # img = img.convert("L")  # grayscale
         img = img.resize((img.width * 2, img.height * 2))  # upscale
 
-        # OCR with PyTesseract
-        text = pytesseract.image_to_string(img)
-
-    return text, comment, img
+    return comment, img
 
 
 
@@ -212,48 +208,57 @@ def highlight_image(fail_pos_list, img, data_list, label_segs):
 #highlighted the heading which didnt match the form heading.
 
 
-def validate_label(img, b, p, a, n):
+def validate_label(file_obj, b, p, a, n):
 
-    data_list = get_rectangles_text(img)
-
-    bl, pl, al, nl = extract_objs_from_text(data_list)
-
-    comment = ""
+    comment, img = preprocess_image(file_obj)
     fail_pos_list = []
+    label_segs = []
+    data_list = None
 
-    if not b == bl:
+    if not comment:
 
-        comment += "Brand on form does NOT match brand on label.\n"
-        fail_pos_list.append(0)
+        data_list = get_rectangles_text(img)
 
-    if not p == pl:
+        if not data_list['text']:
 
-        comment += "Product on form does NOT match product on label.\n"
-        fail_pos_list.append(1)
+            comment += "Take clearer picture. No text could be recognized."
 
-    if not a == al:
+        else:
 
-        comment += "Alcohol percentage on form does NOT match percentage on label.\n"
-        fail_pos_list.append(2)
+            bl, pl, al, nl = extract_objs_from_text(data_list)
+            label_segs = [bl, pl, al, nl]
 
-    if not n == nl:
+            if not b == bl:
 
-        comment += "Net contents on form does NOT match net contents on label.\n"
-        fail_pos_list.append(3)
+                comment += "Brand on form does NOT match brand on label.\n"
+                fail_pos_list.append(0)
 
-    label_segs = [bl, pl, al, nl]
+            if not p == pl:
 
-    img = highlight_image(fail_pos_list, img, data_list, label_segs)
+                comment += "Product on form does NOT match product on label.\n"
+                fail_pos_list.append(1)
+
+            if not a == al:
+
+                comment += "Alcohol percentage on form does NOT match percentage on label.\n"
+                fail_pos_list.append(2)
+
+            if not n == nl:
+
+                comment += "Net contents on form does NOT match net contents on label.\n"
+                fail_pos_list.append(3)
+
+            img = highlight_image(fail_pos_list, img, data_list, label_segs)
     
 
-    return comment, img
+    return comment, data_list, img
 
 
 # this method gets all necessary comments by going through form headings first, then
 # getting text through image, and then validating labels.
 
 
-def getComments(app):
+def getComments():
 
     text = ""
     comment = ""
@@ -261,6 +266,7 @@ def getComments(app):
     comment_dict = {"missing_headers": None,
                 "comments_after_submit":"",
                 "success":""}
+    data_list = None
 
     brand = request.form['brand'].lower()
     prod = request.form['product'].lower()
@@ -272,15 +278,13 @@ def getComments(app):
 
     if not comment_dict['missing_headers']:
 
-        text, comment, img = get_text_from_image(file)
+        comment, data_list, img = validate_label(file, brand, prod, alc, net)
 
-        if not text and not comment:
+        if data_list:
 
-            comment += "Take clearer picture. No text could be recognized."
+            if data_list['text']:
 
-        if not comment:
-
-            comment, img = validate_label(img, brand, prod, alc, net)
+                text = " ".join(data_list['text'])
             
         if not comment:
             comment_dict["success"] = "SUCCESS!"
@@ -288,7 +292,6 @@ def getComments(app):
             comment_dict["comments_after_submit"] = comment
 
     return comment_dict, file, img, text
-
 
 # saving the image so it can be used in html script
 
