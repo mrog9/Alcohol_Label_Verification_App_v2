@@ -6,11 +6,19 @@ import os
 from flask import request
 from dotenv import load_dotenv
 
+# ---------------------------------------------------------------------------------------
+
 load_dotenv
 ENV = os.getenv("ENV")
 if ENV=="local":
 
     pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
+
+
+# was added so that i could run file locally or on render without changing anything
+
+
+# --------------------------------------------------------------------------------------
 
 
 # deleting any files previously saved
@@ -21,6 +29,9 @@ def delete_any_files(folder):
         if any(entries):
             for e in entries:
                 os.remove(e.path())
+
+
+# -------------------------------------------------------------------------------------
 
 
 # this method is to make sure the form fields are not empty. It goes through 
@@ -51,6 +62,8 @@ def validate_form_input(b, p, a, n):
     #     comment_dict["file"] = "A file was not uploaded."
 
     return comment_dict
+
+# -----------------------------------------------------------------------------------------
 
 
 
@@ -84,6 +97,8 @@ def preprocess_image(file_obj):
     return comment, img
 
 
+# ----------------------------------------------------------------------------
+
 
 # this method extracts the text and rectangles for each segment of text
 # i stored the each word and the dims of the box that contained
@@ -106,6 +121,9 @@ def get_rectangles_text(img):
                 data_list['text'].append(data['text'][i].strip())
 
     return data_list
+
+
+# ---------------------------------------------------------------------------------
 
 
 # from the object created from the method above, I put each word
@@ -170,6 +188,9 @@ def extract_objs_from_text(data_list):
     return brand_on_label, prod_on_label, alc_percent, net_contents
 
 
+# ----------------------------------------------------------------------------
+
+
 # this method forms the complete box of each label heading (of each line)
 # that doesnt match the form heading
 
@@ -208,6 +229,8 @@ def highlight_image(fail_pos_list, fp, data_list, label_segs):
     img.save("static/" + fp)
 
 
+# ----------------------------------------------------------------------------------
+
 # saving the image so it can be used in html script
 
 def save_image(app, file_obj, img):
@@ -222,6 +245,11 @@ def save_image(app, file_obj, img):
         filepath = filepath.replace("\\", "/")
 
     return filepath
+
+# -------------------------------------------------------------------------------
+
+# preprocess the image with Pillow, get all the words and associated boxes from image,
+# identify all headers out of picture, and then save the image
 
 
 def get_label_info(app, file_obj):
@@ -250,11 +278,10 @@ def get_label_info(app, file_obj):
     return comment, data_list, label_segs, filepath
 
 
-# this method actually validates the label with the form information.
-# i used a few of the above methods in this method. i found the retangles 
-# for each word. categorized each word in the appropriate heading. 
-#highlighted the heading which didnt match the form heading.
+# -------------------------------------------------------------------------
 
+
+# validates whether labels identified in image matches the labels on the form
 
 def validate_label(data_list, label_segs, b, p, a, n, f):
 
@@ -291,6 +318,8 @@ def validate_label(data_list, label_segs, b, p, a, n, f):
     
 
     return comment, data_list
+
+# ----------------------------------------------------------------------
 
 
 # this method gets all necessary comments by going through form headings first, then

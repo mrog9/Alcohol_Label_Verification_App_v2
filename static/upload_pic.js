@@ -1,5 +1,11 @@
+// global variables
+
 let currentController = null;
 let pic_json = null;
+// ------------------------------------------------------------
+
+// in this method the image selected is processed so that the info
+// is available for validation once form is submitted
 
 async function get_pict_info(file) {
 
@@ -32,6 +38,11 @@ async function get_pict_info(file) {
     });
 
 }
+
+// -------------------------------------------------------------
+
+// method sends the form data along with the processed image data to
+// /validate route. validation info is returned
 
 async function postData(){
 
@@ -90,6 +101,10 @@ async function postData(){
     return validation_info;
 
 }
+
+// ------------------------------------------------------------
+
+// in this method, i am displaying the validation comments on the html page
 
 function display_validation_info(val_info){
 
@@ -162,6 +177,11 @@ function display_validation_info(val_info){
 
 }
 
+// ----------------------------------------------------------
+
+// anytime a different file is selected this event is activated
+// and new image is previewed and processed
+
 const input = document.getElementById("fileInput");
   input.onchange = function(event) {
 
@@ -174,6 +194,10 @@ const input = document.getElementById("fileInput");
     get_pict_info(event.target.files[0]);
 
   };
+
+//   ----------------------------------------------------------
+
+// when a form is submitted this event is activated
 
 const form = document.getElementById("form");
   form.onsubmit = function(event){

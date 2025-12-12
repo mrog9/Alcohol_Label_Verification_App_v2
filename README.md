@@ -4,7 +4,7 @@ Next, I had to anticipate what kind of labels, the web service needed to work fo
 
 I went back to the directions and realized that the web service just needed to work for simple labels such as the one given in the directions. Therefore, I decided to use the Pillow, Pytesseract, and Flask libraries. Pillow is a lightweight package that would process the uploaded image, pytesseract  would extract the text from that image, and flask would coordinate information being sent between the frontend (html page) and backend of the application.
 
-I added bonus feature to this app by having the image upload into html page and rectangles outlining the headings in the image that are mismatched with the form labels.
+I added bonus feature to this app by having the image upload into html page and rectangles outlining the headings in the image that are mismatched with the form labels. Furthermore, do make sure the website ran faster, I used javascript to pass information from html to app.py.
 
 I made sure the app worked locally first and then pushed to github. To deploy on Render, a Dockerfile was created to help create the environment for my web service to operate in. A requirements.txt file included the python libraries used.
 

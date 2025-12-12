@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import json
 import os
 
+# ---------------------------------------------------
+
 # global variables
 
 app = Flask(__name__)
@@ -15,19 +17,21 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 load_dotenv()
 ENV = os.getenv("ENV", "deploy")
 
+# ----------------------------------------------------
+
 
 # "home" page
 
 @app.route("/", methods=["GET", "POST"])
 def index():
 
-    flag = None
 
-    if request.method == "POST":
+    return render_template("form.html")
 
-        flag = "success"
+# -----------------------------------------------------------
 
-    return render_template("form.html", flag = flag)
+# the image is previewed and while the rest of the form is being filled out
+# the image is being processed. returns json
 
 @app.route("/preview_img", methods=["POST"])
 def preview_img():
@@ -42,13 +46,13 @@ def preview_img():
 
         comment, data_list, label_segs, filepath = get_label_info(app, file)
 
-        print(filepath)
-    # Preprocess or store file
     return jsonify({"comment":comment, "data":data_list, 'label':label_segs, "filepath":filepath})
 
-# when file is uploaded, the form is validated and rectangles drawn around mismatched labels.
-# If no comment is added. Then, the label is validated
-# with the form with the comment "SUCCESS!". The homepage is rendered with the extracted text and comment included
+# ------------------------------------------------------------------
+
+# when the form is submitted, all the processed image information and the form info
+# is sent to this route. the info is extracted and sent through the getComments method
+# where the image is validated with the form information. it will return json
 
 @app.route("/validate", methods=["POST"])
 def upload_file():
@@ -82,6 +86,8 @@ def upload_file():
             comment = c
       
     return jsonify({"text":text,"comment":comment, "filepath":filepath})
+
+# -----------------------------------------------------------------------
 
 if __name__ == "__main__":
 
