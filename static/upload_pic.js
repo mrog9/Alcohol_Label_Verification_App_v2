@@ -221,6 +221,9 @@ const form = document.getElementById("form");
     document.getElementById('a').textContent = "";
     document.getElementById('n').textContent = "";
 
+    const file_comm_tag = document.getElementById("form_upload_err");
+    file_comm_tag.textContent = "";
+
     if (pic_json){
 
         // const comment = pic_json['comment'];
