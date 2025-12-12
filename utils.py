@@ -4,6 +4,13 @@ import io
 from PIL import Image, ImageDraw
 import os
 from flask import request
+from dotenv import load_dotenv
+
+load_dotenv
+ENV = os.getenv("ENV")
+if ENV=="local":
+
+    pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 
 # deleting any files previously saved
@@ -19,7 +26,7 @@ def delete_any_files(folder):
 # this method is to make sure the form fields are not empty. It goes through 
 # each field and adds to the comment string if it is empty and returns the string.
 
-def validate_form_input(b, p, a, n, f):
+def validate_form_input(b, p, a, n):
 
     comment_dict = dict()
 
@@ -39,9 +46,9 @@ def validate_form_input(b, p, a, n, f):
 
         comment_dict["contents"] = "Net contents were not given.\n"
 
-    if not f:
+    # if not f:
 
-        comment_dict["file"] = "A file was not uploaded."
+    #     comment_dict["file"] = "A file was not uploaded."
 
     return comment_dict
 
@@ -166,8 +173,10 @@ def extract_objs_from_text(data_list):
 # this method forms the complete box of each label heading (of each line)
 # that doesnt match the form heading
 
-def highlight_image(fail_pos_list, img, data_list, label_segs):
+def highlight_image(fail_pos_list, fp, data_list, label_segs):
 
+
+    img = Image.open('static/' + fp)
     draw = ImageDraw.Draw(img)
 
     for i in fail_pos_list:
@@ -176,9 +185,6 @@ def highlight_image(fail_pos_list, img, data_list, label_segs):
         x, y, w, h= 0,0,0,0
         first_flag = True
         cnt = 0
-
-        print(i)
-        print(label_segs[i])
 
         for j in range(len(data_list['text'])):
 
@@ -199,99 +205,8 @@ def highlight_image(fail_pos_list, img, data_list, label_segs):
 
         draw.rectangle([x, y, x + tot_w + cnt*6, y + h], outline="red", width=2)
 
-    return img
+    img.save("static/" + fp)
 
-
-# this method actually validates the label with the form information.
-# i used a few of the above methods in this method. i found the retangles 
-# for each word. categorized each word in the appropriate heading. 
-#highlighted the heading which didnt match the form heading.
-
-
-def validate_label(file_obj, b, p, a, n):
-
-    comment, img = preprocess_image(file_obj)
-    fail_pos_list = []
-    label_segs = []
-    data_list = None
-
-    if not comment:
-
-        data_list = get_rectangles_text(img)
-
-        if not data_list['text']:
-
-            comment += "Take clearer picture. No text could be recognized."
-
-        else:
-
-            bl, pl, al, nl = extract_objs_from_text(data_list)
-            label_segs = [bl, pl, al, nl]
-
-            if not b == bl:
-
-                comment += "Brand on form does NOT match brand on label.\n"
-                fail_pos_list.append(0)
-
-            if not p == pl:
-
-                comment += "Product on form does NOT match product on label.\n"
-                fail_pos_list.append(1)
-
-            if not a == al:
-
-                comment += "Alcohol percentage on form does NOT match percentage on label.\n"
-                fail_pos_list.append(2)
-
-            if not n == nl:
-
-                comment += "Net contents on form does NOT match net contents on label.\n"
-                fail_pos_list.append(3)
-
-            img = highlight_image(fail_pos_list, img, data_list, label_segs)
-    
-
-    return comment, data_list, img
-
-
-# this method gets all necessary comments by going through form headings first, then
-# getting text through image, and then validating labels.
-
-
-def getComments():
-
-    text = ""
-    comment = ""
-    img = None
-    comment_dict = {"missing_headers": None,
-                "comments_after_submit":"",
-                "success":""}
-    data_list = None
-
-    brand = request.form['brand'].lower()
-    prod = request.form['product'].lower()
-    alc = request.form['content'].lower().replace(" ","")
-    net = request.form['net'].lower().replace(" ","")
-    file = request.files["file"]
-
-    comment_dict['missing_headers'] = validate_form_input(brand, prod, alc, net, file)
-
-    if not comment_dict['missing_headers']:
-
-        comment, data_list, img = validate_label(file, brand, prod, alc, net)
-
-        if data_list:
-
-            if data_list['text']:
-
-                text = " ".join(data_list['text'])
-            
-        if not comment:
-            comment_dict["success"] = "SUCCESS!"
-        else:
-            comment_dict["comments_after_submit"] = comment
-
-    return comment_dict, file, img, text
 
 # saving the image so it can be used in html script
 
@@ -307,3 +222,105 @@ def save_image(app, file_obj, img):
         filepath = filepath.replace("\\", "/")
 
     return filepath
+
+
+def get_label_info(app, file_obj):
+
+    bl, pl, al, nl = None, None, None, None
+    data_list = None
+    label_segs=None
+    filepath=None
+
+    comment, img = preprocess_image(file_obj)
+
+    if not comment:
+
+        data_list = get_rectangles_text(img)
+
+        if not data_list['text']:
+
+            comment += "Take clearer picture. No text could be recognized."
+
+        else:
+
+            bl, pl, al, nl = extract_objs_from_text(data_list)
+            label_segs = [bl, pl, al, nl]
+            filepath = save_image(app, file_obj, img)
+
+    return comment, data_list, label_segs, filepath
+
+
+# this method actually validates the label with the form information.
+# i used a few of the above methods in this method. i found the retangles 
+# for each word. categorized each word in the appropriate heading. 
+#highlighted the heading which didnt match the form heading.
+
+
+def validate_label(data_list, label_segs, b, p, a, n, f):
+
+    fail_pos_list = []
+    comment = ""
+
+    if label_segs:
+
+        if not b == label_segs[0]:
+
+            comment += "Brand on form does NOT match brand on label.\n"
+            fail_pos_list.append(0)
+
+        if not p == label_segs[1]:
+
+            comment += "Product on form does NOT match product on label.\n"
+            fail_pos_list.append(1)
+
+        if not a == label_segs[2]:
+
+            comment += "Alcohol percentage on form does NOT match percentage on label.\n"
+            fail_pos_list.append(2)
+
+        if not n == label_segs[3]:
+
+            print(label_segs[3])
+
+            comment += "Net contents on form does NOT match net contents on label.\n"
+            fail_pos_list.append(3)
+
+        if comment:
+
+            highlight_image(fail_pos_list, f, data_list, label_segs)
+    
+
+    return comment, data_list
+
+
+# this method gets all necessary comments by going through form headings first, then
+# getting text through image, and then validating labels.
+
+
+def getComments(b,p, a, n, dl, ls, fp):
+
+    text = ""
+    comment = ""
+    comment_dict = {"missing_headers": None,
+                "comments_after_submit":"",
+                "success":""}
+    data_list = None
+
+    comment_dict['missing_headers'] = validate_form_input(b, p, a, n)
+
+    if not comment_dict['missing_headers']:
+
+        comment, data_list= validate_label(dl, ls, b, p, a, n, fp)
+
+        if data_list:
+
+            if data_list['text']:
+
+                text = " ".join(data_list['text'])
+            
+        if not comment:
+            comment_dict["success"] = "SUCCESS!"
+        else:
+            comment_dict["comments_after_submit"] = comment
+
+    return comment_dict, fp, text

@@ -6,103 +6,80 @@
 </head>
 <body>
 
-  <div class="whole_page">
+  <div class="whole_page" id="whole_page">
     
     <div class="out_form">
       <div class="form">
         <div><h1>Alcohol Label Verification</h1></div>
         <div>
-          <form action="/upload" method="post" enctype="multipart/form-data">
+          <form id="form" enctype="multipart/form-data">
             <div class ="in_form">
+
+              <div class="heading">
+                <input type="file" name="file" id="fileInput">
+                <div class="before_comment"><p id="f" hidden></p></div>
+              </div>
+
               <div class="heading">
                 <label for="brand">Brand Name:</label>
-                <input type="text" name="brand" placeholder="Enter Brand Name">
-                {% if comment %}
-                  {% if comment.missing_headers %}
-                  <div class="before_comment"><p>{{comment.missing_headers.brand}}</p></div>
-                  {%endif%}
-                {%endif%}
+                <input type="text" name="brand" id= "brand" placeholder="Enter Brand Name">
+                <div class="before_comment"><p id="b" hidden></p></div> 
               </div>
 
               <div class="heading">
                 <label for="product">Product Type:</label>
-                <input type="text" name="product" placeholder="Enter Product Type">
-                {% if comment %}
-                  {% if comment.missing_headers %}
-                  <div class="before_comment"><p>{{comment.missing_headers.product}}</p></div>
-                  {%endif%}
-                {%endif%}
+                <input type="text" name="product" id= "product" placeholder="Enter Product Type">
+                <div class="before_comment"><p id="p" hidden></p></div>
               </div>
 
               <div class="heading">
                 <label for="content">Alcohol Content:</label>
-                <input type="text" name="content" placeholder="Enter Alcohol Content (%)">
-                {% if comment %}
-                  {% if comment.missing_headers %}
-                  <div class="before_comment"><p>{{comment.missing_headers.alcohol}}</p></div>
-                  {%endif%}
-                {%endif%}
+                <input type="text" name="content" id= "content" placeholder="Enter Alcohol Content (%)">
+                <div class="before_comment"><p id="a" hidden></p></div>
               </div>
 
               <div class="heading">
                 <label for="net">Net Contents:</label>
-                <input type="text" name="net" placeholder="Enter Net Contents (mL)">
-                {% if comment %}
-                  {% if comment.missing_headers %}
-                  <div class="before_comment"><p>{{comment.missing_headers.contents}}</p></div>
-                  {%endif%}
-                {%endif%}
-              </div>
-
-              <div class="heading">
-                <input type="file" name="file">
-                {% if comment %}
-                  {% if comment.missing_headers %}
-                  <div class="before_comment"><p>{{comment.missing_headers.file}}</p></div>
-                  {%endif%}
-                {%endif%}
+                <input type="text" name="net" id="net" placeholder="Enter Net Contents (mL)">
+                <div class="before_comment"><p id="n" hidden></p></div>
               </div>
 
               <div>
-                <button type="submit">Upload</button>
+                <button type="submit">Validate</button>
+                <div><p id="form_upload_err"></p></div>
               </div>
             </div>
           </form>
         </div>
       </div>
 
-      <div class="image">
-        {% if filepath %}
+      <div id="preview" hidden>
+
         <h1>Image</h1>
-        <img src="{{ url_for('static', filename=filepath) }}", width = "400", height="400">
-        {% endif %}
+        <img id= "preview_image", src="",width = "400", height="400">
+
       </div>
 
     </div>
 
-    {% if comment %}
-      {% if comment.comments_after_submit %}
-      <div class="failure">
-        <div>
-          <h1>ERROR MESSAGE:  {{comment.comments_after_submit}}</h1>
-        </div>
-      </div>
-      {% else %}
-      <div class="success">
-        <h1>{{comment.success}}</h1>
-      </div>
-      {% endif %}
-    {% endif %}
-
-    <div class="extract">
-
-      {% if text%}
-      <h3>TEXT EXTRACTED FROM IMAGE:</h3>
-      <p>{{text}}</p>
-      {% endif %}
-
+    <div class="failure" id="failure" hidden>
+      <h1></h1>
     </div>
+
+
+    <div class="extract" hidden>
+      <h3>TEXT EXTRACTED FROM IMAGE: </h3>
+      <p></p>
+    </div>
+
   </div>
+
+  <div class="success" id="success" hidden>
+      <h1>SUCCESS!</h1>
+      <button type="button" id="reset">Reload Form</button>
+  </div>
+
+  <script src="{{ url_for('static', filename='upload_pic.js') }}"></script>
 
 </body>
 </html>
