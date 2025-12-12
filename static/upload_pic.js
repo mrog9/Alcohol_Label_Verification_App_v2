@@ -9,8 +9,6 @@ let pic_json = null;
 
 async function get_pict_info(file) {
 
-    let processed_data = null
-
     if (currentController) {
         currentController.abort();
     }
@@ -68,8 +66,6 @@ async function postData(){
     form_info["product"] = p_tag.value;
     form_info["content"] = a_tag.value;
     form_info["net"] = n_tag.value;
-
-    console.log(n_tag.value);
 
     const form_info_json = JSON.stringify(form_info);
 
@@ -185,17 +181,33 @@ function display_validation_info(val_info){
 // and new image is previewed and processed
 
 const input = document.getElementById("fileInput");
-  input.onchange = function(event) {
+    input.onchange = function(event) {
 
 
-    let preview = document.getElementById("preview");
-    preview.hidden = false;
-    const preview_tag = document.getElementById("preview_image")
-    preview_tag.src = URL.createObjectURL(event.target.files[0])
+        let preview = document.getElementById("preview");
+        preview.hidden = false;
+        const preview_tag = document.getElementById("preview_image")
 
-    get_pict_info(event.target.files[0]);
+        const file_comm_tag = document.getElementById("form_upload_err");
+        file_comm_tag.textContent = "";
 
-  };
+        get_pict_info(event.target.files[0]).then(()=>{
+            const comment = pic_json["comment"]
+
+            if (!comment){
+                preview_tag.src = URL.createObjectURL(event.target.files[0])
+
+            }else{
+
+                const file_comm_tag = document.getElementById("form_upload_err");
+                file_comm_tag.textContent = comment;
+
+            }
+
+
+        });
+
+    };
 
 //   ----------------------------------------------------------
 
