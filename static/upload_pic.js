@@ -191,25 +191,18 @@ const input = document.getElementById("fileInput");
         const file_comm_tag = document.getElementById("form_upload_err");
         file_comm_tag.textContent = "";
 
-        get_pict_info(event.target.files[0]).then(()=>{
+        preview_tag.src = URL.createObjectURL(event.target.files[0])
 
-            console.log(pic_json);
+        get_pict_info(event.target.files[0]).then(()=>{
 
             const comment = JSON.parse(pic_json)["comment"];
 
-            console.log(comment);
-
-            if (!comment){
-                preview_tag.src = URL.createObjectURL(event.target.files[0])
-
-            }else{
-
+            if (comment){
+                
                 const file_comm_tag = document.getElementById("form_upload_err");
                 file_comm_tag.textContent = comment;
 
             }
-
-
         });
 
     };
