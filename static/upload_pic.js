@@ -123,32 +123,34 @@ function display_validation_info(val_info){
     const ac = missing_error['alcohol']
     const nc = missing_error['contents']
 
-    if (bc){
-        bt.hidden = false;
-        bt.textContent = bc;
+    if (bc || pc || ac || nc){
 
-    }
+        if (bc){
+            bt.hidden = false;
+            bt.textContent = bc;
 
-    if (pc){
-        pt.hidden = false;
-        pt.textContent = pc;
+        }
 
-    }
+        if (pc){
+            pt.hidden = false;
+            pt.textContent = pc;
 
-    if (ac){
-        at.hidden = false;
-        at.textContent = ac;
+        }
 
-    }
+        if (ac){
+            at.hidden = false;
+            at.textContent = ac;
 
-    if (nc){
-        nt.hidden = false;
-        nt.textContent = nc;
+        }
 
-    }
+        if (nc){
+            nt.hidden = false;
+            nt.textContent = nc;
+
+        }
 
 
-    if (pic_err){
+    }else if (pic_err){
 
         let e_tag = document.getElementById("failure");
         e_tag.hidden = false
@@ -203,6 +205,11 @@ const form = document.getElementById("form");
   form.onsubmit = function(event){
 
     event.preventDefault();
+
+    document.getElementById('b').textContent = "";
+    document.getElementById('p').textContent = "";
+    document.getElementById('a').textContent = "";
+    document.getElementById('n').textContent = "";
 
     if (pic_json){
 
