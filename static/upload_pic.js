@@ -192,7 +192,12 @@ const input = document.getElementById("fileInput");
         file_comm_tag.textContent = "";
 
         get_pict_info(event.target.files[0]).then(()=>{
-            const comment = pic_json["comment"]
+
+            console.log(pic_json);
+
+            const comment = JSON.parse(pic_json)["comment"];
+
+            console.log(comment);
 
             if (!comment){
                 preview_tag.src = URL.createObjectURL(event.target.files[0])
@@ -225,7 +230,20 @@ const form = document.getElementById("form");
 
     if (pic_json){
 
+        // const comment = pic_json['comment'];
+
+        // console.log(comment);
+
+        // if (!comment){
+
         postData().then(val_info => display_validation_info(val_info));
+
+        // }else{
+
+        //     const file_comm_tag = document.getElementById("form_upload_err");
+        //     file_comm_tag.textContent = comment;
+
+        // }
 
     }else{
 
