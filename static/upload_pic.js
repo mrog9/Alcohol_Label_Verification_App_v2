@@ -1,6 +1,7 @@
 // global variables
 
 let currentController = null;
+let orig_image = null;
 let pic_json = null;
 // ------------------------------------------------------------
 
@@ -105,21 +106,24 @@ async function postData(){
 function display_validation_info(val_info){
 
     const missing_error = val_info['comment']['missing_headers'];
-    const pic_err = val_info['comment']['comments_after_submit']
+    const pic_err = val_info['comment']['comments_after_submit'];
 
-    console.log(val_info);
+    let bt = document.getElementById('b');
+    let pt = document.getElementById('p');
+    let at = document.getElementById('a');
+    let nt = document.getElementById('n');
 
-    let bt = document.getElementById('b')
-    let pt = document.getElementById('p')
-    let at = document.getElementById('a')
-    let nt = document.getElementById('n')
 
-    const bc = missing_error['brand']
-    const pc = missing_error['product']
-    const ac = missing_error['alcohol']
-    const nc = missing_error['contents']
+
+    const bc = missing_error['brand'];
+    const pc = missing_error['product'];
+    const ac = missing_error['alcohol'];
+    const nc = missing_error['contents'];
 
     if (bc || pc || ac || nc){
+
+    const preview_tag = document.getElementById("preview_image");
+    preview_tag.src = URL.createObjectURL(orig_image);
 
         if (bc){
             bt.hidden = false;
@@ -149,24 +153,24 @@ function display_validation_info(val_info){
     }else if (pic_err){
 
         let e_tag = document.getElementById("failure");
-        e_tag.hidden = false
+        e_tag.hidden = false;
         let h_tag = e_tag.getElementsByTagName('h1')[0];
         h_tag.textContent = pic_err;
 
         let i_tag = document.getElementById("preview_image");
-        i_tag.src = "static/" + val_info['filepath'];
+        i_tag.src = "static/" + val_info['filepath'] +'?t='+Date.now();
 
     }else{
 
-        const wp = document.getElementById("whole_page")
-        wp.style.display = "none"
+        const wp = document.getElementById("whole_page");
+        wp.style.display = "none";
 
-        const st = document.getElementById("success")
-        st.hidden = false
+        const st = document.getElementById("success");
+        st.hidden = false;
 
         const but = document.getElementById('reset')
         but.addEventListener('click',()=>{
-            location.reload()
+            location.reload();
         })
         
 
@@ -175,23 +179,48 @@ function display_validation_info(val_info){
 
 }
 
+
+function clear_comments(){
+
+    const file_comm_tag = document.getElementById("form_upload_err");
+    file_comm_tag.textContent = "";
+
+    document.getElementById('b').textContent = "";
+    document.getElementById('p').textContent = "";
+    document.getElementById('a').textContent = "";
+    document.getElementById('n').textContent = "";
+
+    document.getElementById('b').hidden = true;
+    document.getElementById('p').hidden = true;
+    document.getElementById('a').hidden = true;
+    document.getElementById('n').hidden = true;
+
+
+    const e_tag = document.getElementById("failure");
+    const h_tag = e_tag.getElementsByTagName('h1')[0];
+    h_tag.textContent = "";
+    e_tag.hidden = true;
+
+
+}
+
+
 // ----------------------------------------------------------
 
 // anytime a different file is selected this event is activated
 // and new image is previewed and processed
 
-const input = document.getElementById("fileInput");
-    input.onchange = function(event) {
+const file_input = document.getElementById("fileInput");
+    file_input.onchange = function(event) {
 
+        clear_comments();
+
+        orig_image = event.target.files[0];
 
         let preview = document.getElementById("preview");
         preview.hidden = false;
-        const preview_tag = document.getElementById("preview_image")
-
-        const file_comm_tag = document.getElementById("form_upload_err");
-        file_comm_tag.textContent = "";
-
-        preview_tag.src = URL.createObjectURL(event.target.files[0])
+        const preview_tag = document.getElementById("preview_image");
+        preview_tag.src = URL.createObjectURL(event.target.files[0]);
 
         get_pict_info(event.target.files[0]).then(()=>{
 
@@ -216,30 +245,18 @@ const form = document.getElementById("form");
 
     event.preventDefault();
 
-    document.getElementById('b').textContent = "";
-    document.getElementById('p').textContent = "";
-    document.getElementById('a').textContent = "";
-    document.getElementById('n').textContent = "";
-
-    const file_comm_tag = document.getElementById("form_upload_err");
-    file_comm_tag.textContent = "";
+    clear_comments();
 
     if (pic_json){
 
-        // const comment = pic_json['comment'];
+        postData()
+        .then(val_info => display_validation_info(val_info)).then(()=>{
 
-        // console.log(comment);
+            const f = document.getElementById('fileInput').files[0];
+            get_pict_info(f);
 
-        // if (!comment){
+        });
 
-        postData().then(val_info => display_validation_info(val_info));
-
-        // }else{
-
-        //     const file_comm_tag = document.getElementById("form_upload_err");
-        //     file_comm_tag.textContent = comment;
-
-        // }
 
     }else{
 
@@ -248,3 +265,4 @@ const form = document.getElementById("form");
 
     }
   };
+
